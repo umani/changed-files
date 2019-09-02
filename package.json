@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "standard --parser @typescript-eslint/parser --plugin @typescript-eslint/eslint-plugin **/*.ts"
+  },
+  "dependencies": {
+    "@actions/core": "^1.0.0",
+    "@actions/github": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.4",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.0.0",
+    "acorn": "^7.0.0",
+    "standard": "^14.1.0",
+    "typescript": "^3.5.1"
+  }
+}

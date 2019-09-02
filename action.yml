@@ -1,0 +1,13 @@
+name: 'Changed Files Exporter'
+description: 'Exports the files created, modified or deleted by a PR'
+author: 'Duarte Nunes <duarte.m.nunes@gmail.com'
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+    required: true
+runs:
+  using: 'node12'
+  main: 'lib/main.js'
+branding:
+  icon: 'wind'
+  color: 'green'

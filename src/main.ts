@@ -22,6 +22,13 @@ async function getChangedFiles (
     console.log(f)
     if (f.status === 'added') {
       acc.created.push(f.filename)
+    } else if (f.status === 'removed') {
+      acc.deleted.push(f.filename)
+    } else if (f.status === 'modified') {
+      acc.updated.push(f.filename)
+    } else if (f.status === 'renamed') {
+      acc.created.push(f.filename)
+      acc.deleted.push(f['previous_filename'])
     }
     return acc
   }, new ChangedFiles())

@@ -39,7 +39,7 @@ async function run () {
 
     const prNumber = getPrNumber()
     if (prNumber == null) {
-      console.log('Could not get pull request number from context, exiting')
+      core.setFailed('Could not get pull request number from context, exiting')
       return
     }
 

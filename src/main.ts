@@ -7,7 +7,7 @@ class ChangedFiles {
   deleted: Array<string> = []
 }
 
-async function getChangedFiles (
+async function getChangedFiles(
   client: github.GitHub,
   prNumber: number
 ): Promise<ChangedFiles> {
@@ -34,12 +34,12 @@ async function getChangedFiles (
   }, new ChangedFiles())
 }
 
-function getPrNumber (): number | null {
+function getPrNumber(): number | null {
   const pullRequest = github.context.payload.pull_request
   return pullRequest ? pullRequest.number : null
 }
 
-async function run () {
+async function run() {
   try {
     const token = core.getInput('repo-token', { required: true })
     const client = new github.GitHub(token)
@@ -53,9 +53,9 @@ async function run () {
     core.debug(`Fetching changed files for pr #${prNumber}`)
     const changedFiles = await getChangedFiles(client, prNumber)
 
-    core.exportVariable('FILES_CREATED', changedFiles.created.join())
-    core.exportVariable('FILES_UPDATED', changedFiles.updated.join())
-    core.exportVariable('FILES_DELETED', changedFiles.deleted.join())
+    core.exportVariable('FILES_CREATED', changedFiles.created.join(" "))
+    core.exportVariable('FILES_UPDATED', changedFiles.updated.join(" "))
+    core.exportVariable('FILES_DELETED', changedFiles.deleted.join(" "))
   } catch (error) {
     core.error(error)
     core.setFailed(error.message)

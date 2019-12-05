@@ -3,7 +3,7 @@
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
-    "lint": "standard --parser @typescript-eslint/parser --plugin @typescript-eslint/eslint-plugin **/*.ts"
+    "lint": "eslint --fix '**/*.ts'"
   },
   "dependencies": {
     "@actions/core": "1.2.0",
@@ -18,5 +18,44 @@
     "eslint-plugin-prettier": "3.1.1",
     "prettier": "1.19.1",
     "typescript": "3.7.3"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+      "plugin:@typescript-eslint/recommended",
+      "prettier/@typescript-eslint",
+      "plugin:prettier/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2019,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-unused-vars": "off",
+      "sort-imports": [
+        "error",
+        {
+          "ignoreCase": false,
+          "ignoreDeclarationSort": false,
+          "ignoreMemberSort": false,
+          "memberSyntaxSortOrder": [
+            "none",
+            "all",
+            "multiple",
+            "single"
+          ]
+        }
+      ],
+      "@typescript-eslint/camelcase": "off",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-var-requires": "off"
+    }
+  },
+  "prettier": {
+    "semi": false,
+    "trailingComma": "all",
+    "singleQuote": false,
+    "printWidth": 120,
+    "tabWidth": 4
   }
 }

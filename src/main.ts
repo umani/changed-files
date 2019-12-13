@@ -50,9 +50,9 @@ async function run(): Promise<void> {
         core.debug(`Fetching changed files for pr #${prNumber}`)
         const changedFiles = await getChangedFiles(client, prNumber)
 
-        core.exportVariable("FILES_CREATED", changedFiles.created.join(" "))
-        core.exportVariable("FILES_UPDATED", changedFiles.updated.join(" "))
-        core.exportVariable("FILES_DELETED", changedFiles.deleted.join(" "))
+        core.setOutput("files_created", changedFiles.created.join(" "))
+        core.setOutput("files_updated", changedFiles.updated.join(" "))
+        core.setOutput("files_deleted", changedFiles.deleted.join(" "))
     } catch (error) {
         core.error(error)
         core.setFailed(error.message)

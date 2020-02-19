@@ -5,35 +5,38 @@ class ChangedFiles {
     updated: Array<string> = []
     created: Array<string> = []
     deleted: Array<string> = []
+
+    count(): number {
+        return this.updated.length + this.created.length + this.deleted.length
+    }
 }
 
-async function getChangedFiles(client: github.GitHub, prNumber: number): Promise<ChangedFiles> {
-    const listFilesResponse = await client.pulls.listFiles({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        pull_number: prNumber,
-    })
+async function getChangedFiles(client: github.GitHub, prNumber: number, fileCount: number): Promise<ChangedFiles> {
+    const changedFiles = new ChangedFiles()
+    const fetchPerPage = 100
+    for (let pageIndex = 0; pageIndex * fetchPerPage < fileCount; pageIndex++) {
+        const listFilesResponse = await client.pulls.listFiles({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: prNumber,
+            page: pageIndex,
+            per_page: fetchPerPage,
+        })
 
-    console.log("Found changed files:")
-    return listFilesResponse.data.reduce((acc: ChangedFiles, f) => {
-        console.log(f)
-        if (f.status === "added") {
-            acc.created.push(f.filename)
-        } else if (f.status === "removed") {
-            acc.deleted.push(f.filename)
-        } else if (f.status === "modified") {
-            acc.updated.push(f.filename)
-        } else if (f.status === "renamed") {
-            acc.created.push(f.filename)
-            acc.deleted.push(f["previous_filename"])
-        }
-        return acc
-    }, new ChangedFiles())
-}
-
-function getPrNumber(): number | null {
-    const pullRequest = github.context.payload.pull_request
-    return pullRequest ? pullRequest.number : null
+        listFilesResponse.data.forEach(f => {
+            if (f.status === "added") {
+                changedFiles.created.push(f.filename)
+            } else if (f.status === "removed") {
+                changedFiles.deleted.push(f.filename)
+            } else if (f.status === "modified") {
+                changedFiles.updated.push(f.filename)
+            } else if (f.status === "renamed") {
+                changedFiles.created.push(f.filename)
+                changedFiles.deleted.push(f["previous_filename"])
+            }
+        })
+    }
+    return changedFiles
 }
 
 async function run(): Promise<void> {
@@ -41,14 +44,14 @@ async function run(): Promise<void> {
         const token = core.getInput("repo-token", { required: true })
         const client = new github.GitHub(token)
 
-        const prNumber = getPrNumber()
-        if (prNumber == null) {
+        const pr = github.context.payload.pull_request
+        if (!pr) {
             core.setFailed("Could not get pull request number from context, exiting")
             return
         }
 
-        core.debug(`Fetching changed files for pr #${prNumber}`)
-        const changedFiles = await getChangedFiles(client, prNumber)
+        const changedFiles = await getChangedFiles(client, pr.number, pr.changed_files)
+        core.debug(`Found ${changedFiles.count} changed files for pr #${pr.number}`)
 
         core.setOutput("files_created", changedFiles.created.join(" "))
         core.setOutput("files_updated", changedFiles.updated.join(" "))

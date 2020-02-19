@@ -57,7 +57,6 @@ async function run(): Promise<void> {
         core.setOutput("files_updated", changedFiles.updated.join(" "))
         core.setOutput("files_deleted", changedFiles.deleted.join(" "))
     } catch (error) {
-        core.error(error)
         core.setFailed(error.message)
     }
 }

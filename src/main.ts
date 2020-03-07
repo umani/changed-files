@@ -23,18 +23,22 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, fileCoun
             per_page: fetchPerPage,
         })
 
-        listFilesResponse.data.forEach(f => {
-            if (f.status === "added") {
-                changedFiles.created.push(f.filename)
-            } else if (f.status === "removed") {
-                changedFiles.deleted.push(f.filename)
-            } else if (f.status === "modified") {
-                changedFiles.updated.push(f.filename)
-            } else if (f.status === "renamed") {
-                changedFiles.created.push(f.filename)
-                changedFiles.deleted.push(f["previous_filename"])
-            }
-        })
+        const pattern = core.getInput("pattern")
+        const re = new RegExp(pattern.length ? pattern : ".*")
+        listFilesResponse.data
+            .filter(f => re.test(f.filename))
+            .forEach(f => {
+                if (f.status === "added") {
+                    changedFiles.created.push(f.filename)
+                } else if (f.status === "removed") {
+                    changedFiles.deleted.push(f.filename)
+                } else if (f.status === "modified") {
+                    changedFiles.updated.push(f.filename)
+                } else if (f.status === "renamed") {
+                    changedFiles.created.push(f.filename)
+                    changedFiles.deleted.push(f["previous_filename"])
+                }
+            })
     }
     return changedFiles
 }

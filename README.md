@@ -8,10 +8,12 @@ This GitHub action applies to pull requests and populates 3 output variables wit
   uses: futuratrepadeira/changed-files@v3.0.0
   with:
     repo-token: ${{ github.token }}
+    pattern: '^.*\.(md|markdown)$'
 ```
 
 ### Inputs
 * **`repo-token`**: GitHub Access Token
+* **`pattern`** (optional): A regular expression to filter the outputs by. Defaults to `'.*'`.
 
 ### Outputs
 All output values are a single JSON encoded array.

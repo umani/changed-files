@@ -36,7 +36,9 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, fileCoun
                     changedFiles.updated.push(f.filename)
                 } else if (f.status === "renamed") {
                     changedFiles.created.push(f.filename)
-                    changedFiles.deleted.push(f["previous_filename"])
+                    if (re.test(f["previous_filename"])) {
+                        changedFiles.deleted.push(f["previous_filename"])
+                    }
                 }
             })
     }

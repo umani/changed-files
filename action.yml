@@ -5,6 +5,10 @@ inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
     required: true
+  pattern:
+    description: 'A regular expression to filter the outputs by.'
+    required: false
+    default: '.*'
 outputs:
   files_created:
     description: 'The names of the newly created files'

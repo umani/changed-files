@@ -5,7 +5,7 @@ This GitHub action applies to pull requests and populates 3 output variables wit
 ### Workflow Config Example
 ```
 - name: Changed Files Exporter
-  uses: futuratrepadeira/changed-files@v3.0.0
+  uses: futuratrepadeira/changed-files@v3.1.0
   with:
     repo-token: ${{ github.token }}
     pattern: '^.*\.(md|markdown)$'

@@ -14,6 +14,7 @@ This GitHub action applies to pull requests and populates 3 output variables wit
 ### Inputs
 * **`repo-token`**: GitHub Access Token
 * **`pattern`** (optional): A regular expression to filter the outputs by. Defaults to `'.*'`.
+* **`pr-number`** (optional): The pull request number. If not provided, the pull request is inferred from the given context. Useful for actions running outside the `pull_request` event context.
 
 ### Outputs
 All output values are a single JSON encoded array.
@@ -21,4 +22,3 @@ All output values are a single JSON encoded array.
 * **`files_created`**: Created files
 * **`files_updated`**: Updated files
 * **`files_deleted`**: Deleted files
-

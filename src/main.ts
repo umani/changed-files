@@ -50,9 +50,21 @@ async function run(): Promise<void> {
         const token = core.getInput("repo-token", { required: true })
         const client = new github.GitHub(token)
 
-        const pr = github.context.payload.pull_request
+        const prNumberInput = core.getInput("pr-number")
+        const pr = prNumberInput
+            ? (
+                  await client.pulls.get({
+                      owner: github.context.repo.owner,
+                      repo: github.context.repo.repo,
+                      pull_number: parseInt(prNumberInput, 10),
+                  })
+              ).data
+            : github.context.payload.pull_request
+
         if (!pr) {
-            core.setFailed("Could not get pull request number from context, exiting")
+            core.setFailed(
+                `Could not get pull request from ${prNumberInput ? "the provided pr number" : "context"}, exiting`,
+            )
             return
         }
 

@@ -3,7 +3,8 @@
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint --fix '**/*.ts'"
+    "lint": "eslint --fix '**/*.ts'",
+    "pack": "ncc build"
   },
   "dependencies": {
     "@actions/core": "1.2.3",

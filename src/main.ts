@@ -1,11 +1,6 @@
 import * as core from "@actions/core"
 import * as github from "@actions/github"
-import { GetResponseDataTypeFromEndpointMethod } from "@octokit/types"
-import { Octokit } from "@octokit/rest"
 import { WebhookPayload } from "@actions/github/lib/interfaces"
-
-const octokit = new Octokit()
-type GetPullResponseDataType = GetResponseDataTypeFromEndpointMethod<typeof octokit.pulls.get>
 
 class ChangedFiles {
     updated: Array<string> = []
@@ -50,7 +45,7 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, fileCoun
     }
     return changedFiles
 }
-async function fetchPr(client: github.GitHub): Promise<GetPullResponseDataType | WebhookPayload["pull_request"]> {
+async function fetchPr(client: github.GitHub): Promise<WebhookPayload["pull_request"]> {
     const prNumberInput = core.getInput("pr-number")
 
     // If user provides pull request number, we fetch and return that particular pull request

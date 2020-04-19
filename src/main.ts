@@ -1,5 +1,11 @@
 import * as core from "@actions/core"
 import * as github from "@actions/github"
+import { GetResponseDataTypeFromEndpointMethod } from "@octokit/types"
+import { Octokit } from "@octokit/rest"
+import { WebhookPayload } from "@actions/github/lib/interfaces"
+
+const octokit = new Octokit()
+type GetPullResponseDataType = GetResponseDataTypeFromEndpointMethod<typeof octokit.pulls.get>
 
 class ChangedFiles {
     updated: Array<string> = []
@@ -44,27 +50,31 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, fileCoun
     }
     return changedFiles
 }
+async function fetchPr(client: github.GitHub): Promise<GetPullResponseDataType | WebhookPayload["pull_request"]> {
+    const prNumberInput = core.getInput("pr-number")
+
+    // If user provides pull request number, we fetch and return that particular pull request
+    if (prNumberInput) {
+        const { data: pr } = await client.pulls.get({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: parseInt(prNumberInput, 10),
+        })
+        return pr
+    }
+
+    // Otherwise, we infer the pull request based on the the event's context
+    return github.context.payload.pull_request
+}
 
 async function run(): Promise<void> {
     try {
         const token = core.getInput("repo-token", { required: true })
         const client = new github.GitHub(token)
-
-        const prNumberInput = core.getInput("pr-number")
-        const pr = prNumberInput
-            ? (
-                  await client.pulls.get({
-                      owner: github.context.repo.owner,
-                      repo: github.context.repo.repo,
-                      pull_number: parseInt(prNumberInput, 10),
-                  })
-              ).data
-            : github.context.payload.pull_request
+        const pr = await fetchPr(client)
 
         if (!pr) {
-            core.setFailed(
-                `Could not get pull request from ${prNumberInput ? "the provided pr number" : "context"}, exiting`,
-            )
+            core.setFailed(`Could not get pull request from context, exiting`)
             return
         }
 

@@ -18,7 +18,7 @@ outputs:
     description: 'The names of the deleted files'
 runs:
   using: 'node12'
-  main: 'lib/main.js'
+  main: 'dist/main.js'
 branding:
   icon: 'wind'
   color: 'green'

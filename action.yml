@@ -9,6 +9,9 @@ inputs:
     description: 'A regular expression to filter the outputs by.'
     required: false
     default: '.*'
+  pr-number:
+    description: 'The pull request number (if absent, the pull request is inferred from the given context).'
+    required: false
 outputs:
   files_created:
     description: 'The names of the newly created files'

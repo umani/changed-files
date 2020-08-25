@@ -43,7 +43,7 @@ async function getChangedFiles(client: GitHub, prNumber: number, fileCount: numb
     const pattern = core.getInput("pattern")
     const changedFiles = new ChangedFiles(new RegExp(pattern.length ? pattern : ".*"))
     const fetchPerPage = 100
-    for (let pageIndex = 0; pageIndex * fetchPerPage < fileCount; pageIndex++) {
+    for (let pageIndex = 1; (pageIndex - 1) * fetchPerPage < fileCount; pageIndex++) {
         const listFilesResponse = await client.pulls.listFiles({
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -87,7 +87,7 @@ function getEncoder(): (files: string[]) => string {
         case "string":
             return files => files.join(" ")
         default:
-            throw new Error('"result-encoding" must be either "string" or "json"')
+            throw new Error("'result-encoding' must be either 'string' or 'json'")
     }
 }
 

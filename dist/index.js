@@ -1561,28 +1561,38 @@ function fetchPr(client) {
             : undefined;
     });
 }
+function getEncoder() {
+    const encoding = core.getInput("result-encoding") || "string";
+    switch (encoding) {
+        case "json":
+            return JSON.stringify;
+        case "string":
+            return String;
+        default:
+            throw new Error('"result-encoding" must be either "string" or "json"');
+    }
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const token = core.getInput("repo-token", { required: true });
-            const client = github_1.getOctokit(token);
-            const pr = yield fetchPr(client);
-            if (!pr) {
-                core.setFailed(`Could not get pull request from context, exiting`);
-                return;
-            }
-            core.debug(`${pr.changed_files} changed files for pr #${pr.number}`);
-            const changedFiles = yield getChangedFiles(client, pr.number, pr.changed_files);
-            core.setOutput("files_created", changedFiles.created);
-            core.setOutput("files_updated", changedFiles.updated);
-            core.setOutput("files_deleted", changedFiles.deleted);
+        const token = core.getInput("repo-token", { required: true });
+        const client = github_1.getOctokit(token);
+        const pr = yield fetchPr(client);
+        if (!pr) {
+            core.setFailed(`Could not get pull request from context, exiting`);
+            return;
         }
-        catch (error) {
-            core.setFailed(error.message);
-        }
+        core.debug(`${pr.changed_files} changed files for pr #${pr.number}`);
+        const changedFiles = yield getChangedFiles(client, pr.number, pr.changed_files);
+        const encoder = getEncoder();
+        core.setOutput("files_created", encoder(changedFiles.created));
+        core.setOutput("files_updated", encoder(changedFiles.updated));
+        core.setOutput("files_deleted", encoder(changedFiles.deleted));
     });
 }
-run();
+run().catch(err => {
+    console.error(err);
+    core.setFailed(`Unhandled error: ${err}`);
+});
 
 
 /***/ }),

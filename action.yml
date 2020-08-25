@@ -1,27 +1,29 @@
-name: 'Changed Files Exporter'
-description: 'Exports the files created, modified or deleted by a PR'
-author: 'Duarte Nunes <duarte.m.nunes@gmail.com'
+name: "Changed Files Exporter"
+description: "Exports the files created, modified or deleted by a PR"
+author: "Duarte Nunes <duarten@hey.com>"
 inputs:
-  repo-token:
-    description: 'The GITHUB_TOKEN secret'
-    required: true
-  pattern:
-    description: 'A regular expression to filter the outputs by.'
-    required: false
-    default: '.*'
-  pr-number:
-    description: 'The pull request number (if absent, the pull request is inferred from the given context).'
-    required: false
+    repo-token:
+        description: "The GITHUB_TOKEN secret"
+        required: true
+    pattern:
+        description: "A regular expression to filter the outputs by."
+        required: false
+        default: ".*"
+    pr-number:
+        description: "The pull request number (if absent, the pull request is inferred from the given context)."
+    result-encoding:
+        required: false
+        description: "The encoding for the output values, either 'string' (default) or 'json'."
 outputs:
-  files_created:
-    description: 'The names of the newly created files'
-  files_updated:
-    description: 'The names of the updated files'
-  files_deleted:
-    description: 'The names of the deleted files'
+    files_created:
+        description: "The names of the newly created files"
+    files_updated:
+        description: "The names of the updated files"
+    files_deleted:
+        description: "The names of the deleted files"
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+    using: "node12"
+    main: "dist/index.js"
 branding:
-  icon: 'wind'
-  color: 'green'
+    icon: "wind"
+    color: "green"

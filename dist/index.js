@@ -1526,7 +1526,7 @@ function getChangedFiles(client, prNumber, fileCount) {
         const pattern = core.getInput("pattern");
         const changedFiles = new ChangedFiles(new RegExp(pattern.length ? pattern : ".*"));
         const fetchPerPage = 100;
-        for (let pageIndex = 0; pageIndex * fetchPerPage < fileCount; pageIndex++) {
+        for (let pageIndex = 1; (pageIndex - 1) * fetchPerPage < fileCount; pageIndex++) {
             const listFilesResponse = yield client.pulls.listFiles({
                 owner: github_1.context.repo.owner,
                 repo: github_1.context.repo.repo,
@@ -1569,7 +1569,7 @@ function getEncoder() {
         case "string":
             return files => files.join(" ");
         default:
-            throw new Error('"result-encoding" must be either "string" or "json"');
+            throw new Error("'result-encoding' must be either 'string' or 'json'");
     }
 }
 function run() {

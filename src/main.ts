@@ -1,71 +1,88 @@
 import * as core from "@actions/core"
-import * as github from "@actions/github"
-import { WebhookPayload } from "@actions/github/lib/interfaces"
+import { context, getOctokit } from "@actions/github"
+
+type GitHub = ReturnType<typeof getOctokit>
+
+interface File {
+    readonly status: string
+    readonly filename: string
+    readonly previous_filename?: string
+}
 
 class ChangedFiles {
-    updated: Array<string> = []
-    created: Array<string> = []
-    deleted: Array<string> = []
+    readonly updated: string[] = []
+    readonly created: string[] = []
+    readonly deleted: string[] = []
 
-    count(): number {
-        return this.updated.length + this.created.length + this.deleted.length
+    constructor(private readonly pattern: RegExp) {}
+
+    apply(f: File): void {
+        if (!this.pattern.test(f.filename)) {
+            return
+        }
+        switch (f.status) {
+            case "added":
+                this.created.push(f.filename)
+                break
+            case "removed":
+                this.deleted.push(f.filename)
+                break
+            case "modified":
+                this.updated.push(f.filename)
+                break
+            case "renamed":
+                this.created.push(f.filename)
+                if (f.previous_filename && this.pattern.test(f.previous_filename)) {
+                    this.deleted.push(f.previous_filename)
+                }
+        }
     }
 }
 
-async function getChangedFiles(client: github.GitHub, prNumber: number, fileCount: number): Promise<ChangedFiles> {
-    const changedFiles = new ChangedFiles()
+async function getChangedFiles(client: GitHub, prNumber: number, fileCount: number): Promise<ChangedFiles> {
+    const pattern = core.getInput("pattern")
+    const changedFiles = new ChangedFiles(new RegExp(pattern.length ? pattern : ".*"))
     const fetchPerPage = 100
     for (let pageIndex = 0; pageIndex * fetchPerPage < fileCount; pageIndex++) {
         const listFilesResponse = await client.pulls.listFiles({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             pull_number: prNumber,
             page: pageIndex,
             per_page: fetchPerPage,
         })
-
-        const pattern = core.getInput("pattern")
-        const re = new RegExp(pattern.length ? pattern : ".*")
-        listFilesResponse.data
-            .filter(f => re.test(f.filename))
-            .forEach(f => {
-                if (f.status === "added") {
-                    changedFiles.created.push(f.filename)
-                } else if (f.status === "removed") {
-                    changedFiles.deleted.push(f.filename)
-                } else if (f.status === "modified") {
-                    changedFiles.updated.push(f.filename)
-                } else if (f.status === "renamed") {
-                    changedFiles.created.push(f.filename)
-                    if (re.test(f["previous_filename"])) {
-                        changedFiles.deleted.push(f["previous_filename"])
-                    }
-                }
-            })
+        core.debug(`Fetched page ${pageIndex} with ${listFilesResponse.data.length} changed files`)
+        listFilesResponse.data.forEach(f => changedFiles.apply(f))
     }
     return changedFiles
 }
-async function fetchPr(client: github.GitHub): Promise<WebhookPayload["pull_request"]> {
+
+async function fetchPr(client: GitHub): Promise<{ number: number; changed_files: number } | undefined> {
     const prNumberInput = core.getInput("pr-number")
 
     // If user provides pull request number, we fetch and return that particular pull request
     if (prNumberInput) {
         const { data: pr } = await client.pulls.get({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             pull_number: parseInt(prNumberInput, 10),
         })
         return pr
     }
 
     // Otherwise, we infer the pull request based on the the event's context
-    return github.context.payload.pull_request
+    return context.payload.pull_request
+        ? {
+              number: context.payload.pull_request.number,
+              changed_files: context.payload.pull_request["changed_files"],
+          }
+        : undefined
 }
 
 async function run(): Promise<void> {
     try {
         const token = core.getInput("repo-token", { required: true })
-        const client = new github.GitHub(token)
+        const client = getOctokit(token)
         const pr = await fetchPr(client)
 
         if (!pr) {
@@ -73,12 +90,12 @@ async function run(): Promise<void> {
             return
         }
 
+        core.debug(`${pr.changed_files} changed files for pr #${pr.number}`)
         const changedFiles = await getChangedFiles(client, pr.number, pr.changed_files)
-        core.debug(`Found ${changedFiles.count} changed files for pr #${pr.number}`)
 
-        core.setOutput("files_created", changedFiles.created.join(" "))
-        core.setOutput("files_updated", changedFiles.updated.join(" "))
-        core.setOutput("files_deleted", changedFiles.deleted.join(" "))
+        core.setOutput("files_created", changedFiles.created)
+        core.setOutput("files_updated", changedFiles.updated)
+        core.setOutput("files_deleted", changedFiles.deleted)
     } catch (error) {
         core.setFailed(error.message)
     }

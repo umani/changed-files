@@ -1567,7 +1567,7 @@ function getEncoder() {
         case "json":
             return JSON.stringify;
         case "string":
-            return String;
+            return files => files.join(" ");
         default:
             throw new Error('"result-encoding" must be either "string" or "json"');
     }

@@ -6,7 +6,7 @@ This GitHub action applies to pull requests and populates 3 output variables wit
 
 ```
 - name: Changed Files Exporter
-  uses: futuratrepadeira/changed-files@v3.3.0
+  uses: umani/changed-files@v3.3.0
   with:
     repo-token: ${{ github.token }}
     pattern: '^.*\.(md|markdown)$'

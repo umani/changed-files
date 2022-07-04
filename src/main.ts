@@ -107,6 +107,14 @@ async function run(): Promise<void> {
 
     const encoder = getEncoder();
 
+    let hasChanged = false;
+    const totalModified =
+        changedFiles.created.length + changedFiles.updated.length + changedFiles.deleted.length;
+    if (totalModified > 0) {
+        hasChanged = true;
+    }
+
+    core.setOutput("changed", String(hasChanged));
     core.setOutput("files_created", encoder(changedFiles.created));
     core.setOutput("files_updated", encoder(changedFiles.updated));
     core.setOutput("files_deleted", encoder(changedFiles.deleted));

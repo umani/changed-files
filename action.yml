@@ -16,6 +16,8 @@ inputs:
         required: false
         description: "The encoding for the output values, either 'string' (default) or 'json'."
 outputs:
+    changed:
+        description: "Indicates whether a file has changed (boolean)"
     files_created:
         description: "The names of the newly created files"
     files_updated:

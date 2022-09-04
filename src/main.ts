@@ -1,117 +1,118 @@
-import * as core from "@actions/core"
-import { context, getOctokit } from "@actions/github"
+import * as core from "@actions/core";
+import { context, getOctokit } from "@actions/github";
 
-type GitHub = ReturnType<typeof getOctokit>
+type GitHub = ReturnType<typeof getOctokit>;
 
 interface File {
-    readonly status: string
-    readonly filename: string
-    readonly previous_filename?: string
+    readonly status: string;
+    readonly filename: string;
+    readonly previous_filename?: string;
 }
 
 class ChangedFiles {
-    readonly updated: string[] = []
-    readonly created: string[] = []
-    readonly deleted: string[] = []
+    readonly updated: string[] = [];
+    readonly created: string[] = [];
+    readonly deleted: string[] = [];
 
-    constructor(private readonly pattern: RegExp) {}
+    constructor(private readonly pattern: RegExp) { }
 
     apply(f: File): void {
         if (!this.pattern.test(f.filename)) {
-            return
+            return;
         }
         switch (f.status) {
             case "added":
-                this.created.push(f.filename)
-                break
+                this.created.push(f.filename);
+                break;
             case "removed":
-                this.deleted.push(f.filename)
-                break
+                this.deleted.push(f.filename);
+                break;
             case "modified":
-                this.updated.push(f.filename)
-                break
+                this.updated.push(f.filename);
+                break;
             case "renamed":
-                this.created.push(f.filename)
+                this.created.push(f.filename);
                 if (f.previous_filename && this.pattern.test(f.previous_filename)) {
-                    this.deleted.push(f.previous_filename)
+                    this.deleted.push(f.previous_filename);
                 }
         }
     }
 }
 
-async function getChangedFiles(client: GitHub, prNumber: number, fileCount: number): Promise<ChangedFiles> {
-    const pattern = core.getInput("pattern")
-    const changedFiles = new ChangedFiles(new RegExp(pattern.length ? pattern : ".*"))
-    const fetchPerPage = 100
-    for (let pageIndex = 1; (pageIndex - 1) * fetchPerPage < fileCount; pageIndex++) {
-        const listFilesResponse = await client.pulls.listFiles({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber,
-            page: pageIndex,
-            per_page: fetchPerPage,
-        })
-        core.debug(`Fetched page ${pageIndex} with ${listFilesResponse.data.length} changed files`)
-        listFilesResponse.data.forEach(f => changedFiles.apply(f))
+async function getChangedFiles(client: GitHub, prNumber: number): Promise<ChangedFiles> {
+    const pattern = core.getInput("pattern");
+    const changedFiles = new ChangedFiles(new RegExp(pattern.length ? pattern : ".*"));
+    const iterator = client.paginate.iterator(client.rest.pulls.listFiles, {
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        pull_number: prNumber,
+        per_page: 100,
+    });
+    for await (const { data: files } of iterator) {
+        files.forEach(f => changedFiles.apply(f));
     }
-    return changedFiles
+    return changedFiles;
 }
 
-async function fetchPr(client: GitHub): Promise<{ number: number; changed_files: number } | undefined> {
-    const prNumberInput = core.getInput("pr-number")
+function extractPrNumber(): number | undefined {
+    const prNumberInput = core.getInput("pr-number");
 
     // If user provides pull request number, we fetch and return that particular pull request
     if (prNumberInput) {
-        const { data: pr } = await client.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: parseInt(prNumberInput, 10),
-        })
-        return pr
+        return parseInt(prNumberInput, 10);
     }
 
-    // Otherwise, we infer the pull request based on the the event's context
-    return context.payload.pull_request
-        ? {
-              number: context.payload.pull_request.number,
-              changed_files: context.payload.pull_request["changed_files"],
-          }
-        : undefined
+    // Try to infer the pull request from the event's context
+    if (context.payload.pull_request) {
+        return context.payload.pull_request.number;
+    }
+
+    // FIXME: This is a hack to get the PR number from the "merge_group" event
+    if (context.payload["merge_group"]) {
+        const match = /pr-(\d+)-/.exec(context.payload["merge_group"]["head_ref"])?.[1];
+        if (match) {
+            return parseInt(match, 10);
+        }
+    }
+
+    return undefined;
 }
 
 function getEncoder(): (files: string[]) => string {
-    const encoding = core.getInput("result-encoding") || "string"
+    const encoding = core.getInput("result-encoding") || "string";
     switch (encoding) {
         case "json":
-            return JSON.stringify
+            return JSON.stringify;
         case "string":
-            return files => files.join(" ")
+            return files => files.join(" ");
         default:
-            throw new Error("'result-encoding' must be either 'string' or 'json'")
+            throw new Error("'result-encoding' must be either 'string' or 'json'");
     }
 }
 
 async function run(): Promise<void> {
-    const token = core.getInput("repo-token", { required: true })
-    const client = getOctokit(token)
-    const pr = await fetchPr(client)
+    core.debug(`event: ${JSON.stringify(context)}`);
+    const token = core.getInput("repo-token", { required: true });
+    const client = getOctokit(token);
 
+    const pr = extractPrNumber();
     if (!pr) {
-        core.setFailed(`Could not get pull request from context, exiting`)
-        return
+        core.setFailed(`Could not get pull request from context, exiting`);
+        return;
     }
 
-    core.debug(`${pr.changed_files} changed files for pr #${pr.number}`)
-    const changedFiles = await getChangedFiles(client, pr.number, pr.changed_files)
+    core.debug(`calculating changed files for pr #${pr}`);
 
-    const encoder = getEncoder()
+    const changedFiles = await getChangedFiles(client, pr);
 
-    core.setOutput("files_created", encoder(changedFiles.created))
-    core.setOutput("files_updated", encoder(changedFiles.updated))
-    core.setOutput("files_deleted", encoder(changedFiles.deleted))
+    const encoder = getEncoder();
+
+    core.setOutput("files_created", encoder(changedFiles.created));
+    core.setOutput("files_updated", encoder(changedFiles.updated));
+    core.setOutput("files_deleted", encoder(changedFiles.deleted));
 }
 
 run().catch(err => {
-    console.error(err)
-    core.setFailed(`Unhandled error: ${err}`)
-})
+    console.error(err);
+    core.setFailed(`Unhandled error: ${err}`);
+});

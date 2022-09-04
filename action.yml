@@ -1,6 +1,6 @@
 name: "Changed Files Exporter"
 description: "Exports the files created, modified or deleted by a PR"
-author: "Duarte Nunes <duarten@hey.com>"
+author: "Duarte Nunes <duarte at fastmail.com>"
 inputs:
     repo-token:
         description: "The GITHUB_TOKEN secret"
@@ -23,7 +23,7 @@ outputs:
     files_deleted:
         description: "The names of the deleted files"
 runs:
-    using: "node12"
+    using: "node16"
     main: "dist/index.js"
 branding:
     icon: "wind"

@@ -1,15 +1,36 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2021",
+        "lib": [
+            "es2021"
+        ],
         "module": "commonjs",
         "outDir": "./lib",
         "rootDir": "./src",
-        "strict": true,
-        "noImplicitAny": false,
+        "isolatedModules": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "alwaysStrict": true,
+        "exactOptionalPropertyTypes": true,
+        "declaration": false,
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": false,
+        "inlineSourceMap": false,
+        "inlineSources": false,
+        "noEmitOnError": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "esModuleInterop": true
+        "skipLibCheck": true,
+        "strict": true
     },
-    "exclude": ["node_modules"]
+    "exclude": [
+        "node_modules"
+    ]
 }

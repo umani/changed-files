@@ -1,12 +1,12 @@
 # Changed Files Action
 
-This GitHub action applies to pull requests and populates 3 output variables with the modified files. They are: "files_created", "files_updated", and "files_deleted".
+This GitHub action applies to pull request and merge group workflow triggers and populates 3 output variables with the modified files. They are: "files_created", "files_updated", and "files_deleted".
 
 ### Workflow Config Example
 
 ```
 - name: Changed Files Exporter
-  uses: umani/changed-files@v3.3.0
+  uses: umani/changed-files@v4.0.0
   with:
     repo-token: ${{ github.token }}
     pattern: '^.*\.(md|markdown)$'

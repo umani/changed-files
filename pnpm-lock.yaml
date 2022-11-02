@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@actions/core': 1.9.1
+  '@actions/core': 1.10.0
   '@actions/github': 5.0.3
   '@types/node': 18.7.14
   '@typescript-eslint/eslint-plugin': 5.36.1
@@ -14,7 +14,7 @@ specifiers:
   typescript: 4.8.2
 
 dependencies:
-  '@actions/core': 1.9.1
+  '@actions/core': 1.10.0
   '@actions/github': 5.0.3
 
 devDependencies:
@@ -30,8 +30,8 @@ devDependencies:
 
 packages:
 
-  /@actions/core/1.9.1:
-    resolution: {integrity: sha512-5ad+U2YGrmmiw6du20AQW5XuWo7UKN2052FjSV7MX+Wfjf8sCqcsZe62NfgHys4QI4/Y+vQvLKYL8jWtA1ZBTA==}
+  /@actions/core/1.10.0:
+    resolution: {integrity: sha512-2aZDDa3zrrZbP5ZYg159sNoLRb61nQ7awl5pSvIq5Qpj81vwDzdMRKzkWJGJuwVvWpvZKx7vspJALyvaaIQyug==}
     dependencies:
       '@actions/http-client': 2.0.1
       uuid: 8.3.2

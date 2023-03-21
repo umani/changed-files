@@ -4,7 +4,8 @@
     "scripts": {
         "build": "tsc",
         "lint": "eslint --fix '**/*.ts'",
-        "pack": "ncc build"
+        "pack": "ncc build --source-map",
+        "all": "npm run build && npm run lint && npm run pack"
     },
     "dependencies": {
         "@actions/core": "1.10.0",

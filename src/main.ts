@@ -116,8 +116,13 @@ async function run(): Promise<void> {
 
     core.setOutput("changed", String(hasChanged));
     core.setOutput("files_created", encoder(changedFiles.created));
+    core.setOutput("files_created_count", String(changedFiles.created.length));
     core.setOutput("files_updated", encoder(changedFiles.updated));
+    core.setOutput("files_updated_count", String(changedFiles.updated.length));
     core.setOutput("files_deleted", encoder(changedFiles.deleted));
+    core.setOutput("files_deleted_count", String(changedFiles.deleted.length));
+    core.setOutput("total_modified_count", String(totalModified));
+    core.debug(`total count: ${String(totalModified)}`);
 }
 
 run().catch(err => {

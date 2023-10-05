@@ -20,10 +20,19 @@ outputs:
         description: "Indicates whether a file has changed (boolean)"
     files_created:
         description: "The names of the newly created files"
+    files_created_count:
+        description: "The number of newly created files"
     files_updated:
         description: "The names of the updated files"
+    files_updated_count:
+        description: "The number of updated files"
     files_deleted:
         description: "The names of the deleted files"
+    files_deleted_count:
+        description: "The number of deleted files"
+    total_modified_count:
+        description: "The sum of all `files_*_count` outputs"
+
 runs:
     using: "node16"
     main: "dist/index.js"

@@ -24,5 +24,9 @@ This GitHub action applies to pull request and merge group workflow triggers and
 All output values are either a space-separated string, or a JSON encoded array.
 
 -   **`files_created`**: Created files
+-   **`files_created_count`**: Number of created files
 -   **`files_updated`**: Updated files
+-   **`files_updated_count`**: Number of updated files
 -   **`files_deleted`**: Deleted files
+-   **`files_deleted_count`**: Number of deleted files
+-   **`total_modified_count`**: The sum of all `*_count` outputs
